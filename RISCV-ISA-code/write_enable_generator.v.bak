@@ -1,0 +1,10 @@
+
+module msrv32_wr_en_generator (flush_in, rf_wr_en, csr_wr_en, wr_en_int_file_out, wr_en_csr_file_out);
+input flush_in, rf_wr_en, csr_wr_en;
+output wr_en_int_file_out, wr_en_csr_file_out;
+
+assign wr_en_int_file_out = flush_in ? 1'b0 : rf_wr_en;
+assign wr_en_csr_file_out = flush_in ? 1'b0 : csr_wr_en;
+
+endmodule
+

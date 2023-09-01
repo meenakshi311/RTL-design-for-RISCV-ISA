@@ -1,0 +1,53 @@
+
+module msrv32_load_unit (ahb_resp_in, ms_riscv32_mp_dmdata_in, iadder_out_1_to_0_in, load_unsigned_in, 
+                         load_size_in, lu_output_out);
+
+input ahb_resp_in, load_unsigned_in;
+input [31:0] ms_riscv32_mp_dmdata_in;
+input [1:0] iadder_out_1_to_0_in, load_size_in;
+output reg [31:0] lu_output_out;
+
+//declaring temp variables
+reg [7:0] data_byte;
+wire [23:0] byte_ext;
+
+reg [15:0] data_half;
+wire [15:0] half_ext;
+
+always @ (*)
+begin
+  begin
+  if(!ahb_resp_in)
+  case(load_size_in)
+  2'b 00 : lu_output_out = {byte_ext, data_byte};
+  2'b 01 : lu_output_out = {half_ext, data_half};
+  2'b 10 : lu_output_out = ms_riscv32_mp_dmdata_in;
+  2'b 11 : lu_output_out = ms_riscv32_mp_dmdata_in;
+  endcase
+  else
+    lu_output_out = 32'hz;
+  end
+end
+
+always @ (*)
+begin
+  case(iadder_out_1_to_0_in)
+  2'b 00 : data_byte = ms_riscv32_mp_dmdata_in[7:0];
+  2'b 01 : data_byte = ms_riscv32_mp_dmdata_in[15:8];
+  2'b 10 : data_byte = ms_riscv32_mp_dmdata_in[23:16];
+  2'b 11 : data_byte = ms_riscv32_mp_dmdata_in[31:24];
+  endcase
+end
+
+always @ (*)
+begin
+  case(iadder_out_1_to_0_in[1])
+  1'b 0 : data_half = ms_riscv32_mp_dmdata_in[15:0];
+  1'b 1 : data_half = ms_riscv32_mp_dmdata_in[31:16];
+  endcase
+end
+
+assign byte_ext = load_unsigned_in == 1'b1 ? 24'b 0 : {24{data_byte[7]}};
+assign half_ext = load_unsigned_in == 1'b1 ? 16'b 0 : {16{data_half[15]}};
+
+endmodule

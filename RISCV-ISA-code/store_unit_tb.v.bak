@@ -1,0 +1,48 @@
+
+module msrv32_store_unit_tb();
+
+reg [31:0] rs2_in, iadder_in;
+reg [1:0] funct3_in;
+reg mem_wr_req_in, ahb_ready_in;
+wire [31:0] ms_riscv32_mp_dm_data_out;
+wire [31:0] ms_riscv32_mp_dm_addr_out;
+wire ms_riscv32_mp_dmwr_req_out;
+wire [1:0] ahb_htrans_out;
+wire [3:0] ms_riscv32_mp_dmwr_mask_out;
+
+reg [1:0] i;
+
+msrv32_store_unit DUT (.rs2_in(rs2_in), .iadder_in(iadder_in), .funct3_in(funct3_in), .mem_wr_req_in(mem_wr_req_in), 
+                       .ahb_ready_in(ahb_ready_in), .ms_riscv32_mp_dm_data_out(ms_riscv32_mp_dm_data_out), 
+                       .ms_riscv32_mp_dm_addr_out(ms_riscv32_mp_dm_addr_out), .ms_riscv32_mp_dmwr_req_out(ms_riscv32_mp_dmwr_req_out),
+                       .ahb_htrans_out(ahb_htrans_out), .ms_riscv32_mp_dmwr_mask_out(ms_riscv32_mp_dmwr_mask_out));
+
+initial
+begin
+  rs2_in       = 32'b 1111_1010_0101_1100_0011_1110_0111_1101;
+  mem_wr_req_in= 1'b1;
+  ahb_ready_in = 1'b1; 
+  iadder_in    = 32'b 1010_0101_1100_1111_0000_1110_0111_1101;   //00 then last byte and lasthalf word 
+end
+
+initial
+begin
+   funct3_in = 2'b 11;
+   #10;
+   ahb_ready_in = 1'b0;
+   #10;
+   funct3_in = 2'b 11;
+   #10;
+   ahb_ready_in = 1'b1;
+   for(i=2'b00; i<2'b11; i=i+1)
+   begin
+      funct3_in = i;
+      #10;
+   end
+end
+
+initial
+  $monitor ("The dmdata = %b, The dm_addr_out = %b, The dmwr_req_out = %b, The ahb_trans_out = %b, The dmwr_mask_out = %b"
+             ,ms_riscv32_mp_dm_data_out, ms_riscv32_mp_dm_addr_out, ms_riscv32_mp_dmwr_req_out, ahb_htrans_out, ms_riscv32_mp_dmwr_mask_out);
+
+endmodule

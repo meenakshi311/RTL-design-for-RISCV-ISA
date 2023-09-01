@@ -1,0 +1,55 @@
+
+module msrv32_wb_mux_sel_unit_tb();
+reg [31:0] alu_result_in, lu_output_in, imm_reg_in, iadder_out_reg_in, csr_data_in, pc_plus_4_reg_in, rs2_reg_in;
+reg alu_src_reg_in;
+reg [2:0] wb_mux_sel_reg_in;
+wire [31:0] wb_mux_out, alu_2nd_src_mux_out;
+
+msrv32_wb_mux_sel_unit DUT (.alu_result_in(alu_result_in), .lu_output_in(lu_output_in), .imm_reg_in(imm_reg_in), 
+                            .iadder_out_reg_in(iadder_out_reg_in), .csr_data_in(csr_data_in),.pc_plus_4_reg_in(pc_plus_4_reg_in), 
+                            .rs2_reg_in(rs2_reg_in), .alu_src_reg_in(alu_src_reg_in), .wb_mux_sel_reg_in(wb_mux_sel_reg_in),
+                            .wb_mux_out(wb_mux_out), .alu_2nd_src_mux_out(alu_2nd_src_mux_out));
+
+integer i;
+
+initial
+begin
+  alu_result_in     = 32'b 1111_0000_1010_1100_1111_0000_1010_1100;
+  lu_output_in      = 32'b 1100_1010_0000_1111_1100_1010_0000_1111;
+  imm_reg_in        = 32'b 0000_1111_0000_1111_0000_1111_0000_1111;
+  iadder_out_reg_in = 32'b 1010_1010_1010_1010_1010_1010_1010_1010;
+  csr_data_in       = 32'b 0000_0000_0000_0000_1111_1111_1111_1111;
+  pc_plus_4_reg_in  = 32'b 1111_1111_0000_0000_1111_1111_0000_0000;
+  rs2_reg_in        = 32'b 1111_1111_1111_1111_0000_0000_0000_0000;
+end
+
+initial
+begin 
+  alu_src_reg_in = 1'b0;
+  #5;
+  alu_src_reg_in = 1'b1;
+  #5;
+  alu_src_reg_in = 1'b0;
+  #5;
+  alu_src_reg_in = 1'b1;
+  #5;
+  alu_src_reg_in = 1'b0;
+  #5;
+  alu_src_reg_in = 1'b0;
+  #5;
+  alu_src_reg_in = 1'b1;
+end
+
+initial
+begin 
+  for(i=3'b000; i<3'b111; i=i+1)
+  begin
+    wb_mux_sel_reg_in = i;
+    #5;
+  end
+end
+
+initial
+  $monitor ("The wbmux out = %b ---  The Alu source 2nd is = %b", wb_mux_out, alu_2nd_src_mux_out);
+
+endmodule

@@ -1,0 +1,44 @@
+
+module msrv32_decoder_tb();
+reg trap_taken_in, funct7_5_in;
+reg  [6:0] opcode_in;
+reg  [2:0] funct3_in;
+reg  [1:0] iadder_out_1_to_0_in;
+wire [2:0] wb_mux_sel_out, imm_type_out, csr_op_out;
+wire mem_wr_req_out, load_unsigned_out, alu_src_out, iadder_src_out;
+wire csr_wr_en_out, rf_wr_en_out, illegal_instr_out, misaligned_load_out, misaligned_store_out;
+wire [3:0] alu_opcode_out;
+wire [1:0] load_size_out;
+		
+msrv32_decoder DUT (.trap_taken_in(trap_taken_in), .funct7_5_in(funct7_5_in), .opcode_in(opcode_in), .funct3_in(funct3_in),
+                    .iadder_out_1_to_0_in(iadder_out_1_to_0_in), .wb_mux_sel_out(wb_mux_sel_out), .imm_type_out(imm_type_out),
+                    .csr_op_out(csr_op_out), .mem_wr_req_out(mem_wr_req_out), .load_unsigned_out(load_unsigned_out),
+                    .alu_src_out(alu_src_out), .iadder_src_out(iadder_src_out), .csr_wr_en_out(csr_wr_en_out), 
+                    .rf_wr_en_out(rf_wr_en_out), .illegal_instr_out(illegal_instr_out), .misaligned_load_out(misaligned_load_out),
+                    .misaligned_store_out(misaligned_store_out),.alu_opcode_out(alu_opcode_out), .load_size_out(load_size_out));
+
+reg [4:0] i;
+
+initial
+begin
+  trap_taken_in        = 1'b0;
+  funct7_5_in          = 1'b1;
+  iadder_out_1_to_0_in = 2'b10;
+  funct3_in            = 3'b101;
+  opcode_in[1:0]       = 2'b01;
+end
+
+initial
+begin
+  for(i=5'b00000; i<5'b11111; i=i+1)
+  begin
+     opcode_in[6:2] = i;
+     #1;
+  end
+end
+
+initial
+$monitor ("The opcode_in = %b, wbmuxsel = %b, imm_type_out = %b, csr_op_out = %b, mem_wr_req_out = %b, load_unsigned_out = %b, alu_src_out = %b, iadder_src_out = %b, csr_wr_en_out = %b, rf_wr_en_out = %b, illegal_instr_out = %b, misaligned_load_out = %b, misaligned_store_out = %b, alu_opcode_out = %b, load_size_out = %b"
+           ,opcode_in[6:2], wb_mux_sel_out, imm_type_out, csr_op_out,mem_wr_req_out, load_unsigned_out, alu_src_out, iadder_src_out 
+           ,csr_wr_en_out, rf_wr_en_out, illegal_instr_out, misaligned_load_out, misaligned_store_out, alu_opcode_out, load_size_out);
+endmodule

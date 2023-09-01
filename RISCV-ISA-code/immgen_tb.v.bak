@@ -1,0 +1,42 @@
+
+module msrv32_imm_generator_tb ();
+reg [31:0]instr_in;
+reg [2:0]imm_type_in;
+wire [31:0] imm_out;
+
+msrv32_imm_generator DUT (.instr_in(instr_in), .imm_type_in(imm_type_in), .imm_out(imm_out));
+
+reg [2:0]i;
+
+initial
+ begin
+    instr_in = 25'b 110101010_01010101_11001100;
+    $display ("Instruction without opcode {31:7] = %b", instr_in);
+    $display ("opcode place = %b", instr_in[6:0]);
+ end
+
+task print (input [2:0]j);
+begin
+     $display ("\nComplete Instruction = %b", {{instr_in},{4'b0000},{j}});
+end
+endtask
+
+initial
+begin
+   for(i=3'b 000; i<3'b 111; i=i+1)
+   begin
+   imm_type_in = i;
+   print(imm_type_in);
+   #10;
+   end
+   #2;
+   imm_type_in =3'b111;
+   #10;
+   $finish;
+end
+ 
+initial
+ $monitor ("opcode = %b -- immediate_address = %b", imm_type_in, imm_out);
+
+endmodule
+   

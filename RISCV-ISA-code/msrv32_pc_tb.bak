@@ -1,0 +1,81 @@
+*/module msrv32_pc_tb;
+wire [31:0] pc_mux_out;
+reg input rst_in, input [1:0] pc_src_in, input [31:0] epc_in,
+input [31:0] trap_address_in, input branch_taken_in, input [31:0] i_addr_in,
+input ahb_ready_in, input [31:0] pc_in;*/
+
+module msrv32_pc_tb;
+  reg rst_in;
+  reg [1:0] pc_src_in;
+  reg [31:0] epc_in;
+  reg [31:0] trap_address_in;
+  reg branch_taken_in;
+  reg [31:0] i_addr_in;
+  reg ahb_ready_in;
+  reg [31:0] pc_in;
+  wire [31:0] i_addr_out;
+  wire [31:0] pc_plus_4_out;
+  wire misaligned_inst_out;
+  wire [31:0] pc_mux_out;
+
+  msrv32_pc dut (
+    .rst_in(rst_in),
+    .pc_src_in(pc_src_in),
+    .epc_in(epc_in),
+    .trap_address_in(trap_address_in),
+    .branch_taken_in(branch_taken_in),
+    .i_addr_in(i_addr_in),
+    .ahb_ready_in(ahb_ready_in),
+    .pc_in(pc_in),
+    .i_addr_out(i_addr_out),
+    .pc_plus_4_out(pc_plus_4_out),
+    .misaligned_instr_logic_out(misaligned_inst_out),
+    .pc_mux_out(pc_mux_out)
+  );
+
+  initial begin
+    // Initialize inputs
+    rst_in = 0;
+    pc_src_in = 2'b00;
+    epc_in = 32'h0;
+    trap_address_in = 32'h0;
+    branch_taken_in = 0;
+    i_addr_in = 32'h0;
+    ahb_ready_in = 0;
+    pc_in = 32'h0;
+
+    // Wait for a few clock cycles
+    #10;
+
+    // Apply reset
+    rst_in = 1;
+    #5;
+    rst_in = 0;
+
+    // Wait for a few clock cycles
+    #10;
+
+    // Assign values to inputs
+    pc_src_in = 2'b01;
+    epc_in = 32'h12345678;
+    trap_address_in = 32'h87654321;
+    branch_taken_in = 1;
+    i_addr_in = 32'hABCDEF01;
+    ahb_ready_in = 1;
+    pc_in = 32'h87654321;
+
+    // Wait for a few clock cycles
+    #10;
+
+    // Display outputs
+    $display("i_addr_out = %h", i_addr_out);
+    $display("pc_plus_4_out = %h", pc_plus_4_out);
+    $display("misaligned_inst_out = %b", misaligned_inst_out);
+    $display("pc_mux_out = %h", pc_mux_out);
+
+    // Finish simulation
+    $finish;
+  end
+endmodule
+
+

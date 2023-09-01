@@ -1,0 +1,44 @@
+
+module msrv32_integer_file (ms_riscv32_mp_clk_in, ms_riscv32_mp_rst_in, rs_1_addr_in, rs_2_addr_in, rd_addr_in,
+                             rd_in, wr_en_in, rs_1_out, rs_2_out);
+input [4:0] rs_1_addr_in, rs_2_addr_in, rd_addr_in;
+input [31:0] rd_in;
+input ms_riscv32_mp_clk_in, ms_riscv32_mp_rst_in, wr_en_in;
+output [31:0] rs_1_out, rs_2_out;
+
+//functionality
+//writing synchronous to clock
+//fetch - decode - exceute - memory - writeback
+//if you are fetching one instruction, there we are using rs1 the address of source 
+//register 1 is same as the previous destination address, if we are waiting then we get
+//the data in the next clock of writeback so there may be a delay
+// To avoid that if we are having situation like this, directly pass the write value in
+//the required rs1 address
+
+reg [31:0] reg_file [31:0];
+
+wire same_add_r1;
+wire same_add_r2;
+integer i;
+
+assign same_add_r1 = ((rs_1_addr_in==rd_addr_in) && wr_en_in) ? 1'b1 : 1'b0;
+assign same_add_r2 = ((rs_2_addr_in==rd_addr_in) && wr_en_in) ? 1'b1 : 1'b0;
+
+always @ (posedge ms_riscv32_mp_clk_in or posedge ms_riscv32_mp_rst_in)
+begin
+   if(ms_riscv32_mp_rst_in)
+   begin
+      for(i=0; i<32; i=i+1)
+          reg_file[i] = 32'b0;
+      end
+
+    else if(wr_en_in && rd_addr_in)
+    begin
+           reg_file[rd_addr_in] <= rd_in;
+    end
+end
+
+assign rs_1_out = (same_add_r1==1'b1) ? rd_in : reg_file[rs_1_addr_in];
+assign rs_2_out = (same_add_r2==1'b1) ? rd_in : reg_file[rs_2_addr_in];
+
+endmodule

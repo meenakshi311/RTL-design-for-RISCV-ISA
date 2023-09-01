@@ -1,0 +1,29 @@
+
+module msrv32_alu_tb ();
+reg [31:0] op_1_in, op_2_in;
+reg [3:0] opcode_in;
+wire [31:0] result_out;
+
+msrv32_alu DUT (.op_1_in(op_1_in), .op_2_in(op_2_in), .opcode_in(opcode_in), .result_out(result_out));
+
+reg [3:0] i;
+
+initial
+begin
+  op_1_in = 32'b 0000_0000_0000_0000_0000_0000_0000_0011;
+  op_2_in = 32'b 0000_0000_0000_0000_0000_0000_0000_0010;
+end
+
+
+initial
+begin
+  for(i=4'b0000; i<4'b1111; i=i+1)
+     begin
+        opcode_in = i;
+        #5;
+      end
+end
+
+initial
+  $monitor("The opcode is = %b ---- The result_out = %b",opcode_in,result_out);
+endmodule

@@ -1,0 +1,93 @@
+module msrv32_store_unit (funct3_in, iadder_in, rs2_in, mem_wr_req_in, ahb_ready_in, ms_riscv32_mp_dm_data_out, 
+                          ms_riscv32_mp_dm_addr_out, ms_riscv32_mp_dmwr_mask_out, ms_riscv32_mp_dmwr_req_out, ahb_htrans_out);
+
+input [31:0] rs2_in, iadder_in;
+input [1:0] funct3_in;
+input mem_wr_req_in, ahb_ready_in;
+output reg [31:0] ms_riscv32_mp_dm_data_out;
+output wire [31:0] ms_riscv32_mp_dm_addr_out;
+output wire ms_riscv32_mp_dmwr_req_out;
+output reg [1:0] ahb_htrans_out;
+output reg [3:0] ms_riscv32_mp_dmwr_mask_out;
+
+reg [31:0] data_byte;
+reg [31:0] data_half;
+reg [3:0]  byte_wrmask;
+reg [3:0]  half_wrmask;
+
+assign ms_riscv32_mp_dmwr_req_out = mem_wr_req_in;
+assign ms_riscv32_mp_dm_addr_out  = {iadder_in[31:2],2'b 00};
+
+always @ (*)
+begin
+   if(ahb_ready_in)
+      begin
+        case(funct3_in)
+             2'b 00  : begin
+                         ms_riscv32_mp_dm_data_out   = data_byte;
+                         ms_riscv32_mp_dmwr_mask_out = byte_wrmask;
+                       end
+             2'b 01  : begin
+                         ms_riscv32_mp_dm_data_out   = data_half;
+                         ms_riscv32_mp_dmwr_mask_out = half_wrmask;
+                        end
+             default : begin
+                         ms_riscv32_mp_dm_data_out = rs2_in;
+                         ms_riscv32_mp_dmwr_mask_out = {4{mem_wr_req_in}};
+                       end
+        endcase
+        ahb_htrans_out = 2'b10;
+       end
+   else 
+       begin
+        ms_riscv32_mp_dm_data_out = 32'hz;
+        ahb_htrans_out = 2'b00;
+       end
+end
+
+always @ (*)
+begin
+  case(iadder_in[1:0])
+      2'b 00 : begin
+                 data_byte = {8'b0, 8'b0, 8'b0, rs2_in[7:0]};
+                 byte_wrmask = {3'b0, mem_wr_req_in};
+                end
+      2'b 01 : begin
+                 data_byte = {8'b0, 8'b0, rs2_in[15:8], 8'b0};
+                 byte_wrmask = {2'b0, mem_wr_req_in, 1'b0};
+               end
+      2'b 10 : begin
+                 data_byte = {8'b0, rs2_in[23:16], 8'b0, 8'b0}; 
+                 byte_wrmask = {1'b0, mem_wr_req_in, 2'b0};
+               end
+      2'b 11 : begin
+                 data_byte = {rs2_in[31:24], 8'b0, 8'b0, 8'b0};
+                 byte_wrmask = {mem_wr_req_in, 3'b0};
+               end
+      default: begin
+                 data_byte = 32'b 0;
+                 byte_wrmask = {4{mem_wr_req_in}};
+               end
+   endcase
+end
+
+
+always @ (*)
+begin
+  case(iadder_in[1])
+       1'b 0  : begin 
+                  data_half   = {16'b0, rs2_in[15:8]};
+                  half_wrmask = {2'b0, {2{mem_wr_req_in}}};
+                end
+       1'b 1  : begin
+                  data_half   = {rs2_in[31:16], 16'b0};
+                  half_wrmask = {{2{mem_wr_req_in}}, 2'b0};
+                end
+       default: begin
+                  data_half   = 32'b 0;
+                  half_wrmask = {4{mem_wr_req_in}};
+                end
+  endcase
+end
+
+endmodule

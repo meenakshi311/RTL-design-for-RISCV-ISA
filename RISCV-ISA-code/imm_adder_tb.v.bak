@@ -1,0 +1,44 @@
+//test bench for immediate adder
+
+module msrv32_immediate_adder_tb();
+reg [31:0] pc_in;
+reg [31:0] rs_1_in;
+reg [31:0] imm_in;
+reg iadder_src_in;
+wire [31:0] iadder_out;
+
+msrv32_immediate_adder DUT (.pc_in(pc_in), .rs_1_in(rs_1_in), .imm_in(imm_in), .iadder_src_in(iadder_src_in), 
+                            .iadder_out(iadder_out));
+
+task initialize;
+begin
+   pc_in   = 32'h 00000004;
+   rs_1_in = 32'h 00000008;
+   imm_in  = 32'h 0000000c;
+end
+endtask
+
+task in (input i);
+begin
+   iadder_src_in = i;
+end
+endtask
+
+initial
+begin 
+   initialize();
+   in(1'b1);
+   #20;
+   in(1'b0);
+   #20;
+   in(1'b1);
+   #20;
+   in(1'b0);
+   #20;
+//   $finish;
+end
+
+initial
+   $monitor ("iadder_src_in = %b -- iadder_out = %b", iadder_src_in,iadder_out);
+endmodule
+ 

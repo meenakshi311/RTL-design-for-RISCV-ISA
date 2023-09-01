@@ -1,0 +1,39 @@
+
+module load_unit_tb();
+reg ahb_resp_in, load_unsigned_in;
+reg [31:0] ms_riscv32_mp_dmdata_in;
+reg[1:0] iadder_out_1_to_0_in, load_size_in;
+wire [31:0] lu_output_out;
+
+msrv32_load_unit DUT (.ahb_resp_in(ahb_resp_in), .load_unsigned_in(load_unsigned_in), .ms_riscv32_mp_dmdata_in(ms_riscv32_mp_dmdata_in), 
+               .iadder_out_1_to_0_in(iadder_out_1_to_0_in), .load_size_in(load_size_in), .lu_output_out(lu_output_out));
+
+reg [1:0] i;
+initial
+begin
+  ahb_resp_in = 1'b 0;
+  iadder_out_1_to_0_in = 11; //00 or 01 or 10 or 11
+  load_unsigned_in = 1'b 1;
+  ms_riscv32_mp_dmdata_in = 32'b 1111_0101_1010_0011_1100_1110_0001_0000;
+end
+
+initial
+begin
+   load_size_in = 2'b 11;
+   #5;
+   ahb_resp_in = 1'b 1;
+   #5;
+   load_size_in = 2'b 11;
+   #5;
+   ahb_resp_in = 1'b 0;
+   for(i=2'b00; i<2'b11; i=i+1)
+   begin
+   load_size_in = i;
+   #5;
+   end
+end
+
+initial
+  $monitor ("The load ouput is = %b",lu_output_out);
+
+endmodule  

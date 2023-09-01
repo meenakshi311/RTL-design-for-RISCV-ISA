@@ -1,0 +1,40 @@
+
+module msrv32_branch_unit_tb ();
+
+reg [31:0] rs1_in, rs2_in;
+reg [4:0] opcode_6_to_2_in;
+reg [2:0] funct3_in;
+wire branch_taken_out;
+wire take;
+
+msrv32_branch_unit DUT (.opcode_6_to_2_in(opcode_6_to_2_in), .rs1_in(rs1_in), .rs2_in(rs2_in), .funct3_in(funct3_in),
+                 .branch_taken_out(branch_taken_out));
+
+reg [2:0] w;
+
+initial
+begin
+   rs1_in = 32'h 04040400;
+   rs2_in = 32'h 04040404;
+   opcode_6_to_2_in = 11000;
+end 
+
+initial
+begin
+   for(w=3'b 000; w<3'b111; w=w+1)
+   begin
+      funct3_in = w;
+      #5;
+   end 
+   #5;
+   opcode_6_to_2_in = 5'b 11011;
+   #5;
+   opcode_6_to_2_in = 5'b 11111;
+   #5;
+   opcode_6_to_2_in = 5'b 11001;
+end
+
+initial
+ $monitor ("The status of branch when opcode is %b and function is %b = %b",opcode_6_to_2_in,funct3_in,branch_taken_out);
+
+endmodule
